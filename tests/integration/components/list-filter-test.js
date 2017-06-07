@@ -1,25 +1,41 @@
 import { moduleForComponent, test } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
+import wait from 'ember-test-helpers/wait';
+import RSVP from 'rsvp';
 
-moduleForComponent('list-filter', 'Integration | Component | list filter', {
+moduleForComponent('list-filter', 'Integration | Component | filter listing', {
   integration: true
 });
 
-test('it renders', function(assert) {
+const ITEMS = [{city: 'San Francisco'}, {city: 'Portland'}, {city: 'Seattle'}];
+const FILTERED_ITEMS = [{city: 'San Francisco'}];
 
-  // Set any properties with this.set('myProperty', 'value');
-  // Handle any actions with this.on('myAction', function(val) { ... });
+test('should update with matching listings', function (assert) {
+  this.on('filterByCity', (val) => {
+    if (val === '') {
+      return RSVP.resolve(ITEMS);
+    } else {
+      return RSVP.resolve(FILTERED_ITEMS);
+    }
+  });
 
-  this.render(hbs`{{list-filter}}`);
-
-  assert.equal(this.$().text().trim(), '');
-
-  // Template block usage:
   this.render(hbs`
-    {{#list-filter}}
-      template block text
+    {{#list-filter filter=(action 'filterByCity') as |results|}}
+      <ul>
+      {{#each results as |item|}}
+        <li class="city">
+          {{item.city}}
+        </li>
+      {{/each}}
+      </ul>
     {{/list-filter}}
   `);
 
-  assert.equal(this.$().text().trim(), 'template block text');
+  // The keyup event here should invoke an action that will cause the list to be filtered
+  this.$('.list-filter input').val('San').keyup();
+
+  return wait().then(() => {
+    assert.equal(this.$('.city').length, 1);
+    assert.equal(this.$('.city').text().trim(), 'San Francisco');
+  });
 });
