@@ -11,7 +11,9 @@ let MapUtilStub = Ember.Object.extend({
   }
 });
 
-moduleFor('service:maps', 'Unit | Service | maps');
+moduleFor('service:maps', 'Unit | Service | maps', {
+  needs: ['util:google-maps']
+});
 
 test('should create a new map if one isnt cached for location', function (assert) {
   assert.expect(4);
@@ -27,8 +29,7 @@ test('should use existing map if one is cached for location', function (assert) 
   let stubCachedMaps = Ember.Object.create({
     sanFrancisco: DUMMY_ELEMENT
   });
-  let stubMapUtil = MapUtilStub.create({ assert });
-  let mapService = this.subject({ mapUtil: stubMapUtil, cachedMaps: stubCachedMaps });
+  let mapService = this.subject({ cachedMaps: stubCachedMaps });
   let element = mapService.getMapElement('San Francisco');
   assert.equal(element, DUMMY_ELEMENT, 'element fetched from cache');
 });

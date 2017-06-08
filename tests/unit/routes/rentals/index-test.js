@@ -1,11 +1,24 @@
 import { moduleFor, test } from 'ember-qunit';
+import startMirage from '../../../helpers/setup-mirage-for-unit-test';
+import Ember from 'ember';
 
 moduleFor('route:rentals/index', 'Unit | Route | rentals/index', {
-  // Specify the other units that are required for this test.
-  // needs: ['controller:foo']
+  needs: ['model:rental',
+         'adapter:application'],
+  beforeEach() {
+    startMirage(this.container);
+  },
+  afterEach() {
+    window.server.shutdown();
+  }
 });
 
-test('it exists', function(assert) {
+test('should load all rentals', function(assert) {
   let route = this.subject();
-  assert.ok(route);
+  return Ember.run(() => {
+    return route.model().then((results) => {
+      assert.equal(results.get('length'), 3);
+    });
+  });
+
 });
